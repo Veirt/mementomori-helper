@@ -1,9 +1,6 @@
-using MementoMori.Common.Localization;
 using MementoMori.Exceptions;
-using MementoMori.Ortega.Share;
 using MementoMori.Ortega.Share.Data.ApiInterface.Battle;
 using MementoMori.Ortega.Share.Data.ApiInterface.TowerBattle;
-using MementoMori.Ortega.Share.Enums;
 
 namespace MementoMori;
 
