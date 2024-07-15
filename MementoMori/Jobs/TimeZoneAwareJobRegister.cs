@@ -54,8 +54,8 @@ public partial class TimeZoneAwareJobRegister
         {
             AddJob<DailyJob>(scheduler, _gameConfig.Value.AutoJob.DailyJobCron, ResourceStrings.DailyJob, userId, networkManager.TimeManager.DiffFromUtc);
             AddJob<HourlyJob>(scheduler, _gameConfig.Value.AutoJob.HourlyJobCron, ResourceStrings.RewardClaimJob, userId, networkManager.TimeManager.DiffFromUtc);
-            AddJob<PvpJob>(scheduler, NormalizeCron(_gameConfig.Value.AutoJob.PvpJobCron), TextResourceTable.Get("[CommonHeaderLocalPvpLabel]"), userId, networkManager.TimeManager.DiffFromUtc);
-            AddJob<LegendLeagueJob>(scheduler, NormalizeCron(_gameConfig.Value.AutoJob.LegendLeagueJobCron), TextResourceTable.Get("[CommonHeaderGlobalPvpLabel]"), userId,
+            AddJob<PvpJob>(scheduler, _gameConfig.Value.AutoJob.PvpJobCron, TextResourceTable.Get("[CommonHeaderLocalPvpLabel]"), userId, networkManager.TimeManager.DiffFromUtc);
+            AddJob<LegendLeagueJob>(scheduler, _gameConfig.Value.AutoJob.LegendLeagueJobCron, TextResourceTable.Get("[CommonHeaderGlobalPvpLabel]"), userId,
                 networkManager.TimeManager.DiffFromUtc);
             AddJob<GuildRaidBossReleaseJob>(scheduler, _gameConfig.Value.AutoJob.GuildRaidBossReleaseCron, TextResourceTable.Get("[GuildRaidReleaseConfirmTitle]"), userId,
                 networkManager.TimeManager.DiffFromUtc);
@@ -73,11 +73,6 @@ public partial class TimeZoneAwareJobRegister
         {
             Console.WriteLine(e);
         }
-    }
-
-    private string NormalizeCron(string cron)
-    {
-        return Regex.Replace(cron, @"^[\S]+", "0");
     }
 
     private void RemoveJob<T>(IScheduler scheduler, long userId) where T : IJob
