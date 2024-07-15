@@ -56,7 +56,7 @@ public partial class MementoNetworkManager : IDisposable
 
     public long UserId { get; set; }
     public long PlayerId { get; set; }
-    public CultureInfo CultureInfo { get; private set; } = new("zh-CN");
+    public CultureInfo CultureInfo { get; private set; } = new("en-US");
     public LanguageType LanguageType => parseLanguageType(CultureInfo);
 
     public static string AssetCatalogUriFormat { get; private set; }
