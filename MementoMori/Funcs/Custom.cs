@@ -55,11 +55,6 @@ public partial class MementoMoriFuncs
                     {
                         log(e.Message);
                         bossErrCount++;
-                        if (bossErrCount > Max_Err_Count)
-                        {
-                            log(string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
-                            return;
-                        }
                         if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
                     }
                 }
@@ -93,11 +88,6 @@ public partial class MementoMoriFuncs
                     {
                         log(e.Message);
                         towerErrCount++;
-                        if (towerErrCount > Max_Err_Count)
-                        {
-                            log(string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
-                            return;
-                        }
                         if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
                     }
                 }

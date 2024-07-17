@@ -23,7 +23,6 @@ namespace MementoMori;
 [AutoConstruct]
 public partial class MementoMoriFuncs : ReactiveObject, IDisposable
 {
-    private const int Max_Err_Count = 20;
     private readonly AccountManager _accountManager;
 
     private readonly IWritableOptions<AuthOption> _AuthOption;

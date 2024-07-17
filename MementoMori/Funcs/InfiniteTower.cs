@@ -52,12 +52,6 @@ public partial class MementoMoriFuncs
                 {
                     log(e.Message);
                     errCount++;
-                    if (errCount > Max_Err_Count)
-                    {
-                        log(string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
-                        return;
-                    }
-
                     if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
                 }
             }
