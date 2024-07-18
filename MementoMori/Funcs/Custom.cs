@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using MementoMori.Exceptions;
 using MementoMori.Ortega.Share.Data.ApiInterface.Battle;
 using MementoMori.Ortega.Share.Data.ApiInterface.TowerBattle;
@@ -12,15 +13,11 @@ public partial class MementoMoriFuncs
         {
             SelectedAutoTowerType = TowerType.Infinite;
             var targetStopLayer = 0;
-            var selectedTargetQuerstId = 0;
+            var selectedTargetQuestId = 0;
 
-            var towerTotalCount = 0;
-            var towerWinCount = 0;
-            var towerErrCount = 0;
-
-            var bossTotalCount = 0;
-            var bossWinCount = 0;
-            var bossErrCount = 0;
+            var stats = new ConcurrentDictionary<string, (int Total, int Win, int Err)>();
+            stats["Boss"] = (0, 0, 0);
+            stats["Tower"] = (0, 0, 0);
 
             try
             {
@@ -28,73 +25,94 @@ public partial class MementoMoriFuncs
             }
             catch (ApiErrorException e) when (e.ErrorCode == ErrorCode.BattleAutoNextQuestNotFound)
             {
+                // Ignore this specific error
             }
 
-            Task bossTask = Task.Run(async () =>
+            async Task BossTask()
             {
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
                         var targetQuestId = UserSyncData.UserBattleBossDtoInfo.BossClearMaxQuestId + 1;
-                        var bossResponse = await GetResponse<BossRequest, BossResponse>(new BossRequest() { QuestId = targetQuestId });
+                        var bossResponse = await GetResponse<BossRequest, BossResponse>(new BossRequest { QuestId = targetQuestId });
                         var win = bossResponse.BattleResult.SimulationResult.BattleEndInfo.IsWinAttacker();
-                        bossTotalCount++;
-                        if (win) bossWinCount++;
+
+                        stats.AddOrUpdate("Boss",
+                            _ => (1, win ? 1 : 0, 0),
+                            (_, old) => (old.Total + 1, old.Win + (win ? 1 : 0), old.Err));
+
+
                         var info = Masters.QuestTable.GetById(targetQuestId).Memo;
                         var result = win ? Masters.TextResourceTable.Get("[LocalRaidBattleWinMessage]") : Masters.TextResourceTable.Get("[LocalRaidBattleLoseMessage]");
-                        log($"B Total: {bossTotalCount} W: {bossWinCount} E: {bossErrCount} ({info})");
+                        var currentStats = stats["Boss"];
+                        log($"B Total: {currentStats.Total} W: {currentStats.Win} E: {currentStats.Err} ({info})");
+
                         await _battleLogManager.SaveBattleLog(bossResponse.BattleResult, "main", bossResponse.BattleResult.QuestId.ToString(), autoDeletePrefix: "main-*lose");
+
                         if (win)
                         {
-                            if (selectedTargetQuerstId > 0 && selectedTargetQuerstId == targetQuestId) return;
-                            var nextQuestResponse = await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
+                            if (selectedTargetQuestId > 0 && selectedTargetQuestId == targetQuestId) return;
+                            await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
                         }
                     }
                     catch (Exception e)
                     {
                         log(e.Message);
-                        bossErrCount++;
+                        stats.AddOrUpdate("Boss",
+                            _ => (0, 0, 1),
+                            (_, old) => (old.Total, old.Win, old.Err + 1));
                         if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
                     }
                 }
-            });
+            }
 
-            // Tower
-            Task towerTask = Task.Run(async () =>
+            async Task TowerTask()
             {
                 while (!token.IsCancellationRequested)
                 {
                     try
                     {
-                        var towerBattleDtoInfo = UserSyncData.UserTowerBattleDtoInfos.First(d => d.TowerType == SelectedAutoTowerType);
                         var tower = UserSyncData.UserTowerBattleDtoInfos.First(d => d.TowerType == SelectedAutoTowerType);
                         var targetQuestId = tower.MaxTowerBattleId + 1;
-                        var bossQuickResponse = await GetResponse<StartRequest, StartResponse>(new StartRequest()
+                        var bossQuickResponse = await GetResponse<StartRequest, StartResponse>(new StartRequest
                         {
                             TargetTowerType = SelectedAutoTowerType,
                             TowerBattleQuestId = targetQuestId
                         });
+
                         var win = bossQuickResponse.BattleResult.SimulationResult.BattleEndInfo.IsWinAttacker();
-                        towerTotalCount++;
-                        if (win) towerWinCount++;
-                        await _battleLogManager.SaveBattleLog(bossQuickResponse.BattleResult, $@"tower-{SelectedAutoTowerType}", bossQuickResponse.BattleResult.QuestId.ToString(), $"tower-{SelectedAutoTowerType}-*lose");
+                        stats.AddOrUpdate("Tower",
+                            _ => (1, win ? 1 : 0, 0),
+                            (_, old) => (old.Total + 1, old.Win + (win ? 1 : 0), old.Err));
+
+                        await _battleLogManager.SaveBattleLog(bossQuickResponse.BattleResult, $"tower-{SelectedAutoTowerType}", bossQuickResponse.BattleResult.QuestId.ToString(), $"tower-{SelectedAutoTowerType}-*lose");
+
                         var name = Masters.TextResourceTable.Get(SelectedAutoTowerType);
                         var result = win ? Masters.TextResourceTable.Get("[LocalRaidBattleWinMessage]") : Masters.TextResourceTable.Get("[LocalRaidBattleLoseMessage]");
-                        log($"T Total: {towerTotalCount} W: {towerWinCount} E: {towerErrCount} ({name} {targetQuestId})");
+                        var currentStats = stats["Tower"];
+                        log($"T Total: {currentStats.Total} W: {currentStats.Win} E: {currentStats.Err} ({name} {targetQuestId})");
+
                         if (win && targetStopLayer > 0 && targetStopLayer == targetQuestId) return;
                     }
                     catch (Exception e)
                     {
                         log(e.Message);
-                        towerErrCount++;
+                        stats.AddOrUpdate("Tower",
+                            _ => (0, 0, 1),
+                            (_, old) => (old.Total, old.Win, old.Err + 1));
                         if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
                     }
                 }
-            });
+            }
 
-            await Task.WhenAll(towerTask, bossTask);
+            var tasks = new List<Task>
+            {
+                Task.Run(BossTask),
+                Task.Run(TowerTask),
+            };
+
+            await Task.WhenAll(tasks);
         });
     }
-
 }
