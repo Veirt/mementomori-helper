@@ -62,7 +62,7 @@ public partial class MementoMoriFuncs
                         stats.AddOrUpdate("Boss",
                             _ => (0, 0, 1),
                             (_, old) => (old.Total, old.Win, old.Err + 1));
-                        if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
+                        if (e is ApiErrorException) throw;
                     }
                 }
             }
@@ -101,18 +101,33 @@ public partial class MementoMoriFuncs
                         stats.AddOrUpdate("Tower",
                             _ => (0, 0, 1),
                             (_, old) => (old.Total, old.Win, old.Err + 1));
-                        if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
+                        if (e is ApiErrorException) throw;
                     }
                 }
             }
 
-            var tasks = new List<Task>
+            async Task RunTask()
             {
-                Task.Run(BossTask),
-                Task.Run(TowerTask),
-            };
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        var tasks = new List<Task>
+                        {
+                            Task.Run(BossTask),
+                                Task.Run(TowerTask),
+                        };
 
-            await Task.WhenAll(tasks);
+                        await Task.WhenAll(tasks);
+                    }
+                    catch (ApiErrorException)
+                    {
+                        await AuthLogin(_lastPlayerDataInfo);
+                    }
+                }
+            }
+
+            await RunTask();
         });
     }
 }
