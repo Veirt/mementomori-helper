@@ -36,7 +36,7 @@ jobs:
           path: "./publish-${{matrix.rid}}/"
       - name: Create Dev Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/custom'
         with:
           files: |
             ./publish-${{matrix.rid}}.zip
@@ -104,7 +104,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       - name: Create Dev Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/custom'
         with:
           files: |
             ./publish-android/io.github.veirt.mementomorihelper-Signed.apk
