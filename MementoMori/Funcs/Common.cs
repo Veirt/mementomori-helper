@@ -17,7 +17,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using BountyQuestGetListResponse = MementoMori.Ortega.Share.Data.ApiInterface.BountyQuest.GetListResponse;
 
-namespace MementoMori;
+namespace MementoMori.Funcs;
 
 [RegisterTransient<MementoMoriFuncs>]
 [AutoConstruct]
@@ -30,6 +30,8 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
     private readonly ILogger<MementoMoriFuncs> _logger;
     private readonly IWritableOptions<PlayersOption> _playersOption;
     private readonly IServiceProvider _serviceProvider;
+
+    private readonly List<Task> _tasks = new();
     private readonly TimeZoneAwareJobRegister _timeZoneAwareJobRegister;
     private readonly IWritableOptions<GameConfig> _writableGameConfig;
 
@@ -38,8 +40,6 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
     private ConcurrentQueue<Func<Action<string>, CancellationToken, Task>> _funcs = new();
 
     private PlayerDataInfo _lastPlayerDataInfo;
-
-    private readonly List<Task> _tasks = new();
     public TimeManager TimeManager => NetworkManager.TimeManager;
 
     [Reactive]
@@ -175,7 +175,16 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        var task = func(AddLog, _cancellationTokenSource.Token);
+        var task = Task.CompletedTask;
+        try
+        {
+            task = func(AddLog, _cancellationTokenSource.Token);
+        }
+        catch (Exception e)
+        {
+            AddLog(e.ToString());
+        }
+
         _tasks.Add(task);
         _ = task.ContinueWith(t =>
         {
@@ -187,7 +196,7 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
         }
         catch (Exception e)
         {
-            AddLog(e.Message);
+            AddLog(e.ToString());
         }
     }
 
