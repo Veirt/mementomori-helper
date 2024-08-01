@@ -107,7 +107,7 @@ jobs:
         if: github.ref == 'refs/heads/custom'
         with:
           files: |
-            ./publish-android/io.github.veirt.mementomorihelper-Signed.apk
+            ./publish-android/io.github.Veirt.mementomorihelper-Signed.apk
           tag_name: dev
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -116,6 +116,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            ./publish-android/io.github.veirt.mementomorihelper-Signed.apk
+            ./publish-android/io.github.Veirt.mementomorihelper-Signed.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
