@@ -3,7 +3,7 @@ using MementoMori.Exceptions;
 using MementoMori.Ortega.Share.Data.ApiInterface.Battle;
 using MementoMori.Ortega.Share.Data.ApiInterface.TowerBattle;
 
-namespace MementoMori;
+namespace MementoMori.Funcs;
 
 public partial class MementoMoriFuncs
 {
