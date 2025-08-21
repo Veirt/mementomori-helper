@@ -25,6 +25,7 @@
 @using static MementoMori.Ortega.Share.Masters
 @using System.Reflection
 @using MementoMori.BlazorShared.Models
+@using System.Linq
 
 <PageTitle>@Tr("[CommonFooterHomeButtonLabel]")</PageTitle>
 
@@ -216,7 +217,13 @@
             <MudCardContent>
                 <MudSimpleTable Elevation="0" Dense="true" Style="height: 400px; overflow: auto">
                     <tbody>
-                    @foreach (var missionInfo in Funcs.MissionInfoDict?.Values.SelectMany(d => d.UserMissionDtoInfoDict?.Values.SelectMany(x => x) ?? Array.Empty<UserMissionDtoInfo>()) ?? Array.Empty<UserMissionDtoInfo>())
+                    @{
+                        var missionList = (Funcs.MissionInfoDict?.Values?
+                            .SelectMany(d => (d.UserMissionDtoInfoDict?.Values ?? Enumerable.Empty<IEnumerable<UserMissionDtoInfo>>())
+                                .SelectMany(x => x))
+                            ?? Enumerable.Empty<UserMissionDtoInfo>());
+                    }
+                    @foreach (var missionInfo in missionList)
                     {
                         @if (missionInfo.MissionStatusHistory[MissionStatusType.Progress].Any())
                         {
@@ -312,6 +319,8 @@
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Disabled="@Funcs.IsQuickActionExecuting" @onclick="@Funcs.ReadAllMemories">@Tr("[CharacterDetailMemory]")</MudButton>
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Disabled="@Funcs.IsQuickActionExecuting" @onclick="@Funcs.ReceiveAchievementReward">@Tr("[AchieveRankingAchievementTargetLabel]")</MudButton>
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Disabled="@Funcs.IsQuickActionExecuting" @onclick="@Funcs.UseFriendCode">@Tr("[InputFriendCodeEnabled]")</MudButton>
+                            <MudDivider Class="my-2" />
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Secondary" Disabled="@Funcs.IsQuickActionExecuting" @onclick="() => Funcs.AutoBossAndInfiniteTowerRequest(selectedTargetQuerstId, selectedTargetTowerLayer)">Main + Tower (Concurrent)</MudButton>
                         </MudPaper>
                     </MudTabPanel>
                     <MudTabPanel Text="@Tr("[ItemBoxButtonBulkCasting]")">
