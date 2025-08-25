@@ -1,5 +1,8 @@
 ﻿using MementoMori.Exceptions;
 using MementoMori.Ortega.Share.Data.ApiInterface.TowerBattle;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MementoMori.Funcs;
 
@@ -62,6 +65,88 @@ public partial class MementoMoriFuncs
                 }
             }
         });
+    }
+
+    public async Task AutoAllTowersRequest(long targetStopLayer)
+    {
+        await ExecuteQuickAction(async (log, token) =>
+        {
+            if (!LoginOk) return;
+
+            // Get available towers for the day (includes Infinite)
+            var towerTypes = GetAvailableTower().Distinct().ToArray();
+            if (towerTypes.Length == 0) return;
+
+            log($"[AutoTower] Start: {string.Join(",", towerTypes.Select(t => t.ToString()))}");
+
+            var tasks = towerTypes.Select(t => RunTowerTypeLoop(t, targetStopLayer, log, token)).ToArray();
+            await Task.WhenAll(tasks);
+        });
+    }
+
+    private async Task RunTowerTypeLoop(TowerType towerType, long targetStopLayer, Action<string> log, CancellationToken token)
+    {
+        var totalCount = 0;
+        var winCount = 0;
+        var errCount = 0;
+
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var towerInfo = UserSyncData.UserTowerBattleDtoInfos.FirstOrDefault(d => d.TowerType == towerType);
+                if (towerInfo == null)
+                {
+                    log($"[Tower:{towerType}] data not found");
+                    break;
+                }
+
+                if (towerType != TowerType.Infinite && towerInfo.TodayClearNewFloorCount >= 10)
+                {
+                    // Daily limit reached for elemental tower
+                    log($"[Tower:{towerType}] {TextResourceTable.Get("[ClientErrorMessage1700007]")}");
+                    break;
+                }
+
+                var targetQuestId = towerInfo.MaxTowerBattleId + 1;
+                var response = await GetResponse<StartRequest, StartResponse>(new StartRequest
+                {
+                    TargetTowerType = towerType,
+                    TowerBattleQuestId = targetQuestId
+                });
+
+                var win = response.BattleResult.SimulationResult.BattleEndInfo.IsWinAttacker();
+                totalCount++;
+                if (win) winCount++;
+
+                await _battleLogManager.SaveBattleLog(response.BattleResult, $"tower-{towerType}", response.BattleResult.QuestId.ToString(), $"tower-{towerType}-*lose");
+
+                var name = TextResourceTable.Get(towerType);
+                var result = win ? TextResourceTable.Get("[LocalRaidBattleWinMessage]") : TextResourceTable.Get("[LocalRaidBattleLoseMessage]");
+
+                if (towerType == TowerType.Infinite)
+                    log($"[Tower:{towerType}] " + string.Format(ResourceStrings.AutoTowerInfiniteExecMsg, name, targetQuestId, result, totalCount, winCount, errCount));
+                else
+                    log($"[Tower:{towerType}] " + string.Format(ResourceStrings.AutoTowerElementExecMsg, name, targetQuestId, result, totalCount, winCount, errCount, towerInfo.TodayClearNewFloorCount));
+
+                if (win && targetStopLayer > 0 && targetStopLayer == targetQuestId) break;
+            }
+            catch (Exception e)
+            {
+                log($"[Tower:{towerType}] {e.Message}");
+                errCount++;
+                if (errCount > Max_Err_Count)
+                {
+                    log($"[Tower:{towerType}] " + string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
+                    return;
+                }
+
+                if (e is ApiErrorException)
+                {
+                    await AuthLogin(_lastPlayerDataInfo);
+                }
+            }
+        }
     }
 
     public TowerType[] GetAvailableTower()

@@ -321,6 +321,8 @@
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Disabled="@Funcs.IsQuickActionExecuting" @onclick="@Funcs.UseFriendCode">@Tr("[InputFriendCodeEnabled]")</MudButton>
                             <MudDivider Class="my-2" />
                             <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Secondary" Disabled="@Funcs.IsQuickActionExecuting" @onclick="() => Funcs.AutoBossAndInfiniteTowerRequest(selectedTargetQuerstId, selectedTargetTowerLayer)">Main + Tower (Concurrent)</MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Secondary" Disabled="@Funcs.IsQuickActionExecuting" @onclick="() => Funcs.AutoAllTowersRequest(selectedTargetTowerLayer)">All Towers (Concurrent)</MudButton>
+                            <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Secondary" Disabled="@Funcs.IsQuickActionExecuting" @onclick="() => Funcs.AutoBossAndAllTowersRequest(selectedTargetQuerstId, selectedTargetTowerLayer)">Main + All Towers (Concurrent)</MudButton>
                         </MudPaper>
                     </MudTabPanel>
                     <MudTabPanel Text="@Tr("[ItemBoxButtonBulkCasting]")">
