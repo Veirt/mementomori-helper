@@ -126,59 +126,61 @@ public partial class MementoMoriFuncs
 
     public async Task AutoBossRequest(long selectedTargetQuerstId = 0)
     {
-        await ExecuteQuickAction(async (log, token) =>
+        await ExecuteQuickAction((log, token) => RunBossLoop(selectedTargetQuerstId, log, token));
+    }
+
+    private async Task RunBossLoop(long selectedTargetQuerstId, Action<string> log, CancellationToken token)
+    {
+        var totalCount = 0;
+        var winCount = 0;
+        var errCount = 0;
+
+        await GetResponse<MapInfoRequest, MapInfoResponse>(new MapInfoRequest {IsUpdateOtherPlayerInfo = true});
+
+        try
         {
-            var totalCount = 0;
-            var winCount = 0;
-            var errCount = 0;
+            await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
+        }
+        catch (ApiErrorException e) when (e.ErrorCode == ErrorCode.BattleAutoNextQuestNotFound)
+        {
+        }
 
-            await GetResponse<MapInfoRequest, MapInfoResponse>(new MapInfoRequest() {IsUpdateOtherPlayerInfo = true});
-
+        while (!token.IsCancellationRequested)
+        {
             try
             {
-                await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
-            }
-            catch (ApiErrorException e) when (e.ErrorCode == ErrorCode.BattleAutoNextQuestNotFound)
-            {
-            }
+                var targetQuestId = UserSyncData.UserBattleBossDtoInfo.BossClearMaxQuestId + 1;
 
-            while (!token.IsCancellationRequested)
-            {
-                try
+                await GetResponse<GetQuestInfoRequest, GetQuestInfoResponse>(new GetQuestInfoRequest {TargetQuestId = targetQuestId});
+                var bossResponse = await GetResponse<BossRequest, BossResponse>(new BossRequest {QuestId = targetQuestId});
+                var win = bossResponse.BattleResult.SimulationResult.BattleEndInfo.IsWinAttacker();
+                totalCount++;
+                if (win) winCount++;
+                var info = QuestTable.GetById(targetQuestId).Memo;
+                var result = win ? TextResourceTable.Get("[LocalRaidBattleWinMessage]") : TextResourceTable.Get("[LocalRaidBattleLoseMessage]");
+                log(string.Format(ResourceStrings.AutoBossExecMessage, info, result, totalCount, winCount, errCount));
+
+                await _battleLogManager.SaveBattleLog(bossResponse.BattleResult, "main", bossResponse.BattleResult.QuestId.ToString(), "main-*lose");
+
+                if (win)
                 {
-                    var targetQuestId = UserSyncData.UserBattleBossDtoInfo.BossClearMaxQuestId + 1;
-                    
-                    await GetResponse<GetQuestInfoRequest, GetQuestInfoResponse>(new GetQuestInfoRequest() { TargetQuestId = targetQuestId});
-                    var bossResponse = await GetResponse<BossRequest, BossResponse>(new BossRequest {QuestId = targetQuestId});
-                    var win = bossResponse.BattleResult.SimulationResult.BattleEndInfo.IsWinAttacker();
-                    totalCount++;
-                    if (win) winCount++;
-                    var info = QuestTable.GetById(targetQuestId).Memo;
-                    var result = win ? TextResourceTable.Get("[LocalRaidBattleWinMessage]") : TextResourceTable.Get("[LocalRaidBattleLoseMessage]");
-                    log(string.Format(ResourceStrings.AutoBossExecMessage, info, result, totalCount, winCount, errCount));
-
-                    await _battleLogManager.SaveBattleLog(bossResponse.BattleResult, "main", bossResponse.BattleResult.QuestId.ToString(), "main-*lose");
-
-                    if (win)
-                    {
-                        await GetResponse<MapInfoRequest, MapInfoResponse>(new MapInfoRequest() { IsUpdateOtherPlayerInfo = true });
-                        if (selectedTargetQuerstId > 0 && selectedTargetQuerstId == targetQuestId) break;
-                        var nextQuestResponse = await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
-                    }
-                }
-                catch (Exception e)
-                {
-                    log(e.Message);
-                    errCount++;
-                    if (errCount > Max_Err_Count)
-                    {
-                        log(string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
-                        return;
-                    }
-
-                    if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
+                    await GetResponse<MapInfoRequest, MapInfoResponse>(new MapInfoRequest {IsUpdateOtherPlayerInfo = true});
+                    if (selectedTargetQuerstId > 0 && selectedTargetQuerstId == targetQuestId) break;
+                    await GetResponse<NextQuestRequest, NextQuestResponse>(new NextQuestRequest());
                 }
             }
-        });
+            catch (Exception e)
+            {
+                log(e.Message);
+                errCount++;
+                if (errCount > Max_Err_Count)
+                {
+                    log(string.Format(ResourceStrings.AutoBossErrorMessage, Max_Err_Count));
+                    return;
+                }
+
+                if (e is ApiErrorException) await AuthLogin(_lastPlayerDataInfo);
+            }
+        }
     }
 }

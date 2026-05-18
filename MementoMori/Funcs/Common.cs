@@ -33,6 +33,7 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
     private readonly IServiceProvider _serviceProvider;
 
     private readonly List<Task> _tasks = new();
+    private readonly object _quickActionLock = new();
     private readonly TimeZoneAwareJobRegister _timeZoneAwareJobRegister;
     private readonly IWritableOptions<GameConfig> _writableGameConfig;
 
@@ -170,34 +171,67 @@ public partial class MementoMoriFuncs : ReactiveObject, IDisposable
 
     public async Task ExecuteQuickAction(Func<Action<string>, CancellationToken, Task> func)
     {
-        if (!IsQuickActionExecuting)
+        var trackedCompletion = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var trackedTask = trackedCompletion.Task;
+        CancellationToken token;
+        lock (_quickActionLock)
         {
-            IsQuickActionExecuting = true;
-            _cancellationTokenSource = new CancellationTokenSource();
+            _tasks.RemoveAll(d => d.IsCompleted);
+            if (!IsQuickActionExecuting)
+            {
+                IsQuickActionExecuting = true;
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = new CancellationTokenSource();
+            }
+
+            token = _cancellationTokenSource.Token;
+            _tasks.Add(trackedTask);
         }
 
-        var task = Task.CompletedTask;
         try
         {
-            task = func(AddLog, _cancellationTokenSource.Token);
+            await func(AddLog, token);
         }
         catch (Exception e)
         {
             AddLog(e.ToString());
         }
-
-        _tasks.Add(task);
-        _ = task.ContinueWith(t =>
+        finally
         {
-            if (_tasks.TrueForAll(d => d.IsCompleted)) IsQuickActionExecuting = false;
-        });
+            trackedCompletion.TrySetResult(null);
+            CompleteQuickAction(trackedTask);
+        }
+    }
+
+    private void CompleteQuickAction(Task? task)
+    {
+        lock (_quickActionLock)
+        {
+            if (task != null) _tasks.Remove(task);
+            _tasks.RemoveAll(d => d.IsCompleted);
+            if (_tasks.Count == 0) IsQuickActionExecuting = false;
+        }
+    }
+
+    private static async Task WhenAllLogExceptions(IEnumerable<Task> tasks, Action<string> log)
+    {
+        var taskArray = tasks.ToArray();
+        if (taskArray.Length == 0) return;
+
+        var allTasks = Task.WhenAll(taskArray);
         try
         {
-            await task;
+            await allTasks;
         }
-        catch (Exception e)
+        catch
         {
-            AddLog(e.ToString());
+            var exceptions = allTasks.Exception?.Flatten().InnerExceptions;
+            if (exceptions is not {Count: > 0}) throw;
+
+            foreach (var exception in exceptions)
+            {
+                log(exception.ToString());
+            }
         }
     }
 
