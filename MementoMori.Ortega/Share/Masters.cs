@@ -63,6 +63,8 @@ public static class Masters
     public static BookSortBonusFloorRewardTable BookSortBonusFloorRewardTable { get; } = new();
 
     public static BookSortEventTable BookSortEventTable { get; } = new();
+    
+	public static BookSortAssistanceTable BookSortAssistanceTable { get; } = new();
 
     public static BossBattleEnemyTable BossBattleEnemyTable { get; } = new();
 
@@ -258,6 +260,8 @@ public static class Masters
 
     public static MusicTable MusicTable { get; } = new();
 
+    public static ChatEmoticonTable ChatEmoticonTable { get; } = new();
+
     public static VipTable VipTable { get; } = new();
 
     public static WorldGroupTable WorldGroupTable { get; } = new();
@@ -299,6 +303,7 @@ public static class Masters
             BoardRankTable,
             BookSortBonusFloorRewardTable,
             BookSortEventTable,
+            BookSortAssistanceTable,
             BossBattleEnemyTable,
             BountyQuestEventTable,
             ChangeItemTable,
@@ -401,6 +406,7 @@ public static class Masters
             PatternSettingTable,
             SpecialIconItemTable,
             MusicTable,
+            ChatEmoticonTable,
             DownloadRawDataTable,
             PopularityVoteTable
         };

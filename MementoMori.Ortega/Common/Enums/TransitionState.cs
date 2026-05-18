@@ -6,6 +6,8 @@
 		TitleDownloadAll,
 		TitleSplash,
 		TitleMoveToGuidedWorld,
+		TitleWorldChange,
+		TitleFromEntryPointScene,
 		MyPagePlayTouchAction,
 		MyPagePictureBook,
 		MyPageMission,

@@ -51,6 +51,8 @@ namespace MementoMori.Ortega.Share
 		CommonNotFoundCurrentMaxClearQuestId,
 		[Description("プレイヤー生成日の情報がありません。")]
 		CommonNotFoundCreatePlayerTimestamp,
+		[Description("未許可のクライアントからの通信です。")]
+		CommonInvalidClient = 2000,
 		[Description("ユーザーデータがありません")]
 		AuthNotFoundUserAccountDto = 10001,
 		[Description("ユーザーのプレイヤーデータが存在しません")]
@@ -409,6 +411,8 @@ namespace MementoMori.Ortega.Share
 		BattlePvpLegendLeagueIconRewardLimitTimeOver,
 		[Description("アイコン報酬購入済みです")]
 		BattlePvpLegendLeagueIconRewardAlreadyBuy,
+		[Description("アイコン報酬購入上限回数を超えました")]
+		BattlePvpLegendLeagueIconRewardBuyCountLimit,
 		[Description("ユーザーのボスバトルデータがありません")]
 		BattleBossUserBountyQuestDtoNotFound = 141000,
 		[Description("ユーザーデータがありません")]
@@ -631,6 +635,8 @@ namespace MementoMori.Ortega.Share
 		GuildRaidAlreadyRewardWorldItem,
 		[Description("ギルドレイドの期限外です。")]
 		GuildRaidNotOpenGuildRaid,
+		[Description("受取可能な報酬を全て受取済みです。")]
+		GuildRaidNotExistReceivableReward,
 		[Description("ガチャ開催中です。")]
 		GachaAlreadyBeenOpened = 200110,
 		[Description("既にその聖遺物が選択されています。")]
@@ -1207,6 +1213,8 @@ namespace MementoMori.Ortega.Share
 		GlobalGvgNotFoundReceivableReward = 302003,
 		[Description("指定されたパーティが存在しません。")]
 		GlobalGvgNotFoundParty,
+		[Description("マッチング処理中です。")]
+		GlobalGvgNotMatchingYet,
 		[Description("ユーザのレベルリンクデータが見つかりません")]
 		LevelLinkUserLevelLinkDtoNotFound = 311000,
 		[Description("ユーザのキャラクターデータが見つかりません")]
@@ -1379,6 +1387,14 @@ namespace MementoMori.Ortega.Share
 		MusicInvalidMusicId,
 		[Description("プレイリストの曲数上限を超えています。")]
 		MusicOverMaxPlaylistMusicCount,
+		[Description("プレイリストの共有コード生成に失敗しました。")]
+		MusicFailedGeneratePlaylistShareCode,
+		[Description("プレイリストに曲が一つも存在しないと共有できません。")]
+		MusicNotEnoughMusicCountInPlaylist,
+		[Description("共有されたプレイリストを見つけませんでした。")]
+		MusicNotFoundSharePlaylist,
+		[Description("プレイリストの共有期限がきれました。")]
+		MusicExpiredSharePlaylist,
 		[Description("ユーザーのアカウント情報が存在しません")]
 		TutorialAccountDtoNotFound = 401000,
 		[Description("ユーザーのステータス情報が存在しません")]
@@ -1505,6 +1521,12 @@ namespace MementoMori.Ortega.Share
 		PopularityVoteUnavailablePreliminaryResult,
 		[Description("本選結果を確認できる期限ではありません。")]
 		PopularityVoteUnavailableFinalResult,
+		[Description("グループ投票形式ではありません。")]
+		PopularityVoteNotGroupVote,
+		[Description("グループ投票のリクエストが不正です。")]
+		PopularityVoteGroupVoteInvalid,
+		[Description("グループ投票対象に設定できないキャラクターです。")]
+		PopularityVoteNotFoundGroupEntryCharacter,
 		[Description("シリアルコードに間違いがあるか不正な文字が含まれています。")]
 		SerialCodeInvalidCode = 450001,
 		[Description("シリアルコードの有効期限が終了しました。")]
@@ -1637,11 +1659,17 @@ namespace MementoMori.Ortega.Share
 		GuildSurveyDifferentGuildSurvey,
 		[Description("魔女の書庫整理情報が見つかりません。")]
 		BookSortNotFoundUserBookSortDto = 500000,
+		[Description("お手伝い派遣クエスト情報が見つかりません。")]
+		BookSortNotFoundUserBookSortAssistanceQuestDto,
+		[Description("お手伝い派遣派遣対象キャラクター情報が見つかりません。")]
+		BookSortNotFoundUserCharacterDto,
+		[Description("お手伝い派遣情報が見つかりません。")]
+		BookSortNotFoundUserBookSortAssistanceDto,
 		[Description("魔女の書庫整理が解放されていません。")]
 		BookSortEventNotOpen = 501000,
 		[Description("魔女の書庫整理が開催されていません。")]
 		BookSortEventNotHeld,
-		[Description("すでに当たりマスを解放済みです。")]
+		[Description("すでに当たりマスと鍵マスを解放済みです。")]
 		BookSortEventCurrentFloorAlreadyFinished,
 		[Description("ボーナスフロア報酬が未選択です。")]
 		BookSortEventNotSelectBonusFloorReward,
@@ -1649,7 +1677,7 @@ namespace MementoMori.Ortega.Share
 		BookSortEventChangeBonusFloorRewardLineup,
 		[Description("ボーナスフロアではないフロアです。")]
 		BookSortEventNotBonusFloor,
-		[Description("まだ当たりマスを解放していません。")]
+		[Description("まだ当たりマスと鍵マスを解放していません。")]
 		BookSortEventCurrentFloorNotFinish,
 		[Description("枠外が解放対象に指定されています。")]
 		BookSortEventUnlockOutsideFrame,
@@ -1661,6 +1689,26 @@ namespace MementoMori.Ortega.Share
 		BookSortEventNotEnoughLockedGridCellBulkUnlock,
 		[Description("選択できないボーナスフロア報酬です。")]
 		BookSortEventNotSelectableBonusFloorReward,
+		[Description("派遣期間が終了しています。")]
+		BookSortAssistanceNotHeld,
+		[Description("派遣対象の指定が不正です。")]
+		BookSortAssistanceNotAvailableDispatchQuest,
+		[Description("一括派遣が解放されていません。")]
+		BookSortAssistanceNotAvailableBulkDispatch,
+		[Description("派遣できないクエストのステータスです。")]
+		BookSortAssistanceNotAvailableDispatchStatus,
+		[Description("前日以前に発生したお手伝い派遣クエストです。")]
+		BookSortAssistanceNotSameDayQuest,
+		[Description("派遣済みのキャラクターIDです。")]
+		BookSortAssistanceAlreadyUsedCharacter,
+		[Description("報酬獲得出来ないステータスです。")]
+		BookSortAssistanceNotAvailableRewardStatus,
+		[Description("解放出来るお手伝い派遣枠がありません。")]
+		BookSortAssistanceNotAvailableAddAssistance,
+		[Description("指定の派遣対象クエストが重複しています。")]
+		BookSortAssistanceDuplicateQuestGuid,
+		[Description("指定の派遣対象キャラクターが重複しています。")]
+		BookSortAssistanceDuplicateCharacterGuid,
 		[Description("開催中のコラボミッションがありません。")]
 		SweepstakesCollabMissionNotHeld = 510000,
 		[Description("懸賞対象の時間サーバーではありません。")]
@@ -1715,6 +1763,20 @@ namespace MementoMori.Ortega.Share
 		RentalRaidNotOpenBattle,
 		[Description("バトルデータがありません。")]
 		RentalRaidNotFoundRankingBattleLog,
+		[Description("購入できない商品です。")]
+		ChatShopInvalidBuyItem = 542000,
+		[Description("購入済みです。")]
+		ChatShopAlreadyBuyItem,
+		[Description("不正なアイテム種類です。")]
+		ChatShopInvalidItemType = 542010,
+		[Description("交換条件を満たしていません。")]
+		IconEffectNotEnoughTradeCondition = 552000,
+		[Description("既に解放済みのアイコンエフェクトです。")]
+		IconEffectAlreadyUnlocked,
+		[Description("アイコンエフェクトが解放されていません。")]
+		IconEffectLocked,
+		[Description("アイコンエフェクト設定に失敗しました。")]
+		IconEffectSetFailed = 552010,
 		[Description("存在しないTreasureChestです。")]
 		ItemOpenTreasureChestIdNotFound = 602004,
 		[Description("存在しないTreasureChestです。")]
@@ -1903,6 +1965,8 @@ namespace MementoMori.Ortega.Share
 		MagicOnionGlobalGvgAddCastlePartyNotFoundCharacterCache,
 		[Description("グランドバトルの参加条件を満たしていません。")]
 		MagicOnionNotJoinedGrandBattle,
+		[Description("グランドバトルのマッチング処理中です。")]
+		MagicOnionNotMatchingYetGlobalBattle,
 		[Description("認証に失敗しました。")]
 		MagicOnionAuthenticationFail = 1000000,
 		[Description("プレイヤーの情報を見つけません。")]
@@ -1963,6 +2027,8 @@ namespace MementoMori.Ortega.Share
 		MagicOnionOverCastleMemoMessageMaxLength,
 		[Description("既に他のメンバーにより、拠点メモがリセット済みです。")]
 		MagicOnionAlreadyResetCastleMemo,
+        [Description("作戦時間が終了しているため布告できません。")]
+        MagicOnionEndDeclarationTime,
 		[Description("プッシュ通知対象外の端末です。")]
 		PushNotificationNotSupportedDeviceType = 4000000,
 		[Description("プッシュ通知の登録に必要な情報が取得できません。")]
@@ -1973,6 +2039,8 @@ namespace MementoMori.Ortega.Share
 		NotSupportedRemoteNotificationIgnoreType,
 		[Description("不正なリクエストです。")]
 		PushNotificationNotDefinedLanguageType,
+		[Description("不正なリクエストです。")]
+		GvGPushSettingInvalidRequest,
 		[Description("DMM GAME PLAYERからゲームを起動しなおしてください。")]
 		DmmOneTimeTokenExpired = 5000100,
 		[Description("不正なリクエストです。")]

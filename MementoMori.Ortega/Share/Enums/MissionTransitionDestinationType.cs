@@ -71,6 +71,8 @@ namespace MementoMori.Ortega.Share.Enums
 		GuildRaid,
 		[Description("チャット")]
 		Chat = 1701,
+		[Description("チャット（ギルドタブ）")]
+		ChatGuild,
 		[Description("各OSのストア")]
 		OsStore = 1801,
 		[Description("キャラ詳細")]
@@ -81,6 +83,8 @@ namespace MementoMori.Ortega.Share.Enums
 		PanelPictureBook = 2101,
 		[Description("楽曲再生")]
 		MusicPlayer = 2201,
+		[Description("楽曲プレイリスト")]
+		MusicPlaylist,
 		[Description("ギルドツリーメイン画面")]
 		GuildTower = 2301,
 		[Description("ギルドツリーLV強化ダイアログ")]
