@@ -25,7 +25,7 @@ public class TextResourceTable : ITable
             var textResources = Deserialize(languageType, fileStream);
             foreach (var textResource in textResources)
             {
-                _cached[textResource.StringKey] = textResource.Text;
+                _cached[textResource.StringKey] = NormalizeLineBreaks(textResource.Text);
             }
         }
 
@@ -44,11 +44,16 @@ public class TextResourceTable : ITable
             var textResources = Deserialize(languageType, memoryStream);
             foreach (var textResource in textResources)
             {
-                _cached[textResource.StringKey] = textResource.Text;
+                _cached[textResource.StringKey] = NormalizeLineBreaks(textResource.Text);
             }
         }
 
         return true;
+    }
+
+    private static string NormalizeLineBreaks(string text)
+    {
+        return text?.Replace("<br>", Environment.NewLine);
     }
 
     public string GetMasterBookName()
@@ -65,7 +70,8 @@ public class TextResourceTable : ITable
     {
         if (key.IsNullOrEmpty()) return string.Empty;
 
-        return _cached.TryGetValue(key, out var value) ? value.Replace("<br>", Environment.NewLine) : key;
+        if (!_cached.TryGetValue(key, out var value)) return key;
+        return value ?? throw new NullReferenceException();
     }
 
     public string Get<T>(T enumValue) where T : Enum

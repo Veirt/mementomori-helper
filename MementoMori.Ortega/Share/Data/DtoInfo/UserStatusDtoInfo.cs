@@ -57,7 +57,7 @@ namespace MementoMori.Ortega.Share.Data.DtoInfo
 
         public List<long> GetFavoriteUserCharacterIds()
         {
-            return new List<long>()
+            return new List<long>(5)
             {
                 FavoriteCharacterId1, FavoriteCharacterId2, FavoriteCharacterId3, FavoriteCharacterId4,
                 FavoriteCharacterId5

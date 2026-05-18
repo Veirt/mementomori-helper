@@ -64,6 +64,8 @@
                 <MudField Label="@ResourceStrings.AutoRequestDelay" Variant="Variant.Outlined">
                     <MudNumericField @bind-Value="AutoRequestDelay"></MudNumericField>
                 </MudField>
+                <MudSwitch Label="Record battle logs" @bind-Value="RecordBattleLog" Color="Color.Primary"></MudSwitch>
+                <MudSwitch Label="Report battle logs" @bind-Value="ReportBattleLog" Color="Color.Primary"></MudSwitch>
             </MudCardContent>
         </MudCard>
     </MudItem>
@@ -83,6 +85,18 @@
     {
         get => WritableGameConfig.Value.AutoRequestDelay;
         set => WritableGameConfig.Update(x => x.AutoRequestDelay = value);
+    }
+
+    public bool RecordBattleLog
+    {
+        get => WritableGameConfig.Value.RecordBattleLog;
+        set => WritableGameConfig.Update(x => x.RecordBattleLog = value);
+    }
+
+    public bool ReportBattleLog
+    {
+        get => WritableGameConfig.Value.ReportBattleLog;
+        set => WritableGameConfig.Update(x => x.ReportBattleLog = value);
     }
 
     #endregion

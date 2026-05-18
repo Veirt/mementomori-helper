@@ -2,23 +2,26 @@
 {
 	public static class EnumUtil
 	{
+		private static class EnumCache<T> where T : Enum
+		{
+			private static T[] _values;
+
+			internal static T[] Values => _values ??= Enum.GetValues(typeof(T)).Cast<T>().ToArray();
+		}
+
 		public static List<T> GetValueList<T>() where T : Enum
 		{
-			Type typeFromHandle = typeof(T);
-			var values = Enum.GetValues(typeFromHandle);
-			return values.Cast<T>().ToList();
+			return EnumCache<T>.Values.ToList();
 		}
 
 		public static T[] GetValueArray<T>() where T : Enum
 		{
-			Type typeFromHandle = typeof(T);
-			var values = Enum.GetValues(typeFromHandle);
-			return values.Cast<T>().ToArray();
+			return (T[]) EnumCache<T>.Values.Clone();
 		}
 
 		public static int GetLength<T>() where T : Enum
 		{
-			return Enum.GetValues(typeof(T)).Length;
+			return EnumCache<T>.Values.Length;
 		}
 
 		public static string GetKey<T>(T enumValue) where T : Enum

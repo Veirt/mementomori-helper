@@ -397,7 +397,7 @@ public partial class MementoNetworkManager : IDisposable
     {
         _logger.LogInformation("auto get latest version...");
 
-        var httpClient = new HttpClient();
+        using var httpClient = new HttpClient();
         var html = await httpClient.GetStringAsync("https://mememori-game.com/apps/vars.js");
         // '/apps/mementomori_2.14.1.apk'
         var match = Regex.Match(html, @"/apps/mementomori_(?<version>\d+.\d+.\d+).apk");
@@ -411,8 +411,8 @@ public partial class MementoNetworkManager : IDisposable
         var minorAddCount = 5;
         var majorAddCount = 5;
 
-        var handler = new MeMoriHttpClientHandler {AppVersion = _authOption.Value.AppVersion};
-        var client = new HttpClient(handler);
+        using var handler = new MeMoriHttpClientHandler {AppVersion = _authOption.Value.AppVersion};
+        using var client = new HttpClient(handler);
 
         while (true)
         {

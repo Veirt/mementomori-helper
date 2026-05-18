@@ -176,8 +176,16 @@ public class UserSyncData
         if (userSyncData.CreateUserIdTimestamp != null) CreateUserIdTimestamp = userSyncData.CreateUserIdTimestamp;
         if (userSyncData.CreateWorldLocalTimeStamp != null) CreateWorldLocalTimeStamp = userSyncData.CreateWorldLocalTimeStamp;
         if (userSyncData.DataLinkageMap.IsNotNullOrEmpty()) DataLinkageMap = DataLinkageMap.Merge(userSyncData.DataLinkageMap);
-        if (userSyncData.DeletedCharacterGuidList.IsNotNullOrEmpty()) UserCharacterDtoInfos.RemoveAll(d => userSyncData.DeletedCharacterGuidList.Contains(d.Guid));
-        if (userSyncData.DeletedEquipmentGuidList.IsNotNullOrEmpty()) UserEquipmentDtoInfos.RemoveAll(d => userSyncData.DeletedEquipmentGuidList.Contains(d.Guid));
+        if (userSyncData.DeletedCharacterGuidList.IsNotNullOrEmpty())
+        {
+            var deletedCharacterGuidSet = userSyncData.DeletedCharacterGuidList.ToHashSet();
+            UserCharacterDtoInfos.RemoveAll(d => deletedCharacterGuidSet.Contains(d.Guid));
+        }
+        if (userSyncData.DeletedEquipmentGuidList.IsNotNullOrEmpty())
+        {
+            var deletedEquipmentGuidSet = userSyncData.DeletedEquipmentGuidList.ToHashSet();
+            UserEquipmentDtoInfos.RemoveAll(d => deletedEquipmentGuidSet.Contains(d.Guid));
+        }
         if (userSyncData.UserEquipmentStatusDtoInfo != null) UserEquipmentStatusDtoInfo = userSyncData.UserEquipmentStatusDtoInfo;
         if (userSyncData.ExistVipDailyGift != null) ExistVipDailyGift = userSyncData.ExistVipDailyGift;
         if (userSyncData.GivenItemCountInfoList.IsNotNullOrEmpty())

@@ -35,26 +35,35 @@ namespace MementoMori.Ortega.Share.Data.DtoInfo
 
         public List<string> GetUserCharacterGuids()
         {
-            return new List<string>()
-            {
-                UserCharacterGuid1, UserCharacterGuid2, UserCharacterGuid3, UserCharacterGuid4, UserCharacterGuid5
-            }.Where(d => !string.IsNullOrEmpty(d)).ToList();
+            var result = new List<string>(5);
+            if (!string.IsNullOrEmpty(UserCharacterGuid1)) result.Add(UserCharacterGuid1);
+            if (!string.IsNullOrEmpty(UserCharacterGuid2)) result.Add(UserCharacterGuid2);
+            if (!string.IsNullOrEmpty(UserCharacterGuid3)) result.Add(UserCharacterGuid3);
+            if (!string.IsNullOrEmpty(UserCharacterGuid4)) result.Add(UserCharacterGuid4);
+            if (!string.IsNullOrEmpty(UserCharacterGuid5)) result.Add(UserCharacterGuid5);
+            return result;
         }
 
         public List<long> GetCharacterIds()
         {
-            return new List<long>()
-            {
-                CharacterId1, CharacterId2, CharacterId3, CharacterId4, CharacterId5
-            }.Where(d => d > 0).ToList();
+            var result = new List<long>(5);
+            if (CharacterId1 > 0) result.Add(CharacterId1);
+            if (CharacterId2 > 0) result.Add(CharacterId2);
+            if (CharacterId3 > 0) result.Add(CharacterId3);
+            if (CharacterId4 > 0) result.Add(CharacterId4);
+            if (CharacterId5 > 0) result.Add(CharacterId5);
+            return result;
         }
 
         public List<long> GetOpponentCharacterIds()
         {
-            return new List<long>()
-            {
-                CharacterId1, CharacterId2, CharacterId3, CharacterId4, CharacterId5
-            }.Where(d => d > 0).ToList();
+            var result = new List<long>(5);
+            if (CharacterId1 > 0) result.Add(CharacterId1);
+            if (CharacterId2 > 0) result.Add(CharacterId2);
+            if (CharacterId3 > 0) result.Add(CharacterId3);
+            if (CharacterId4 > 0) result.Add(CharacterId4);
+            if (CharacterId5 > 0) result.Add(CharacterId5);
+            return result;
         }
 
         public UserDeckDtoInfo()
